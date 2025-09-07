@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const {
+export const {
   USER,
   HOST,
   PASSWORD,
@@ -11,13 +11,3 @@ const {
   PORT = 3000,
   SECRET_KEY,
 } = process.env;
-
-module.exports = {
-  USER,
-  HOST,
-  PASSWORD,
-  DATABASE,
-  PORT_DB,
-  PORT,
-  SECRET_KEY,
-};
