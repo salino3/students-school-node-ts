@@ -21,7 +21,24 @@ export const registerAccount = async (req: Request, res: Response) => {
   const profile_picture = req.file?.path || null;
 
   try {
-    // Basic server-side validation
+    // Basic server-side validation for all required fields
+    const requiredFields = [
+      "name",
+      "surnames",
+      "email",
+      "password",
+      "age",
+      "passwordConfirm",
+    ];
+
+    for (const field of requiredFields) {
+      if (!req.body[field]) {
+        errorImage(profile_picture);
+        return res.status(400).send(`Error: The field '${field}' is required.`);
+      }
+    }
+
+    // Password validation
     if (password !== passwordConfirm) {
       errorImage(profile_picture);
       return res.status(400).send("Password and confirm password do not match");
@@ -40,14 +57,14 @@ export const registerAccount = async (req: Request, res: Response) => {
     // SQL query to insert a new student into the 'students' table
     const sqlQuery = `
       INSERT INTO students (
-         profile_picture,
-        name,
-        surnames,
-        email,
-        password,
-        age,
-        nationality,
-        phone_number
+           profile_picture,
+         name,
+         surnames,
+         email,
+         password,
+         age,
+         nationality,
+         phone_number
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *;`;
 
