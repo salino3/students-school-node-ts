@@ -45,3 +45,5 @@ if (process.env.NODE_ENV === "production") {
 app.listen(PORT, () => {
   console.log(`Server running on port http://localhost:${PORT}`);
 });
+
+// $ find . -not -path "*/node_modules/*" -not -path "*/.git/*"
