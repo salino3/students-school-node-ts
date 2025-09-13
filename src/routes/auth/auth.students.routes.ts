@@ -7,7 +7,7 @@ const routerStudents = Router();
 // Endpoint for creating a new student account
 // The 'customUpload' middleware handles the file upload before the controller is called
 routerStudents.post(
-  "/create",
+  "/register",
   customUpload("profile_pictures", "profile_picture"),
   studentsControllers.registerAccount
 );

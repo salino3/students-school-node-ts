@@ -81,9 +81,7 @@ export const registerAccount = async (req: Request, res: Response) => {
     }
     if (err.code === "23505") {
       // PostgreSQL error code for unique constraint violation
-      return res
-        .status(400)
-        .send("This email is already in use by an active student.");
+      return res.status(400).send("This email is already in use by a student.");
     }
 
     // Log the error and send a generic server error response
