@@ -148,10 +148,15 @@ export const loginStudentAccount = async (req: Request, res: Response) => {
     const student = result.rows[0];
     const isPasswordValid = bcrypt.compareSync(password, student.password);
     if (!isPasswordValid) {
-      return res.status(401).send("Invalid password");
+      return res.status(401).send("Password or email invalid");
     }
 
     const { password: psw, ...account } = student;
+    if (account.profile_picture) {
+      account.profile_picture = `${req.protocol}://${req.get(
+        "host"
+      )}/${account.profile_picture.replace(/\\/g, "/")}`;
+    }
 
     // Generate token
     const token = jwt.sign(account, SECRET_KEY, {
