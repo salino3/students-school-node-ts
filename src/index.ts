@@ -3,7 +3,8 @@ import { PORT } from "./utils/config";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import path from "path";
-import routerStudents from "./routes/auth/auth.students.routes";
+import routerAuthStudents from "./routes/auth/auth.students.routes";
+import routerStudents from "./routes/students.routes";
 
 const app = express();
 
@@ -30,7 +31,9 @@ app.get("/", (req: Request, res: Response) => {
 // Serve static files from the 'uploads' directory
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Routes
+//* Routes
+// Students
+app.use("/api/auth/students", routerAuthStudents);
 app.use("/api/students", routerStudents);
 
 // Log the current environment
