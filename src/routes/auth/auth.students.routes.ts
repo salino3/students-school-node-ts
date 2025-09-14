@@ -7,7 +7,9 @@ const routerAuthStudents = Router();
 routerAuthStudents.post(
   "/register",
   customUpload("profile_pictures", "profile_picture"),
-  studentsAuthControllers.registerAccount
+  studentsAuthControllers.registerStudentAccount
 );
+
+routerAuthStudents.post("/login", studentsAuthControllers.loginStudentAccount);
 
 export default routerAuthStudents;
