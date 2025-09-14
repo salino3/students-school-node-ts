@@ -1,10 +1,12 @@
 import { Request, Response } from "express";
 import { pool } from "../../db";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import { errorImage } from "../../utils/functions";
+import { SECRET_KEY } from "../../utils/config";
 
 // This is the controller to handle new student registrations.
-export const registerAccount = async (req: Request, res: Response) => {
+export const registerStudentAccount = async (req: Request, res: Response) => {
   // Extract data from the request body and the uploaded file
   const {
     name,
@@ -104,5 +106,72 @@ export const registerAccount = async (req: Request, res: Response) => {
     // Log the error and send a generic server error response
     console.error(err);
     return res.status(500).send("Internal Server Error");
+  }
+};
+
+//
+export const loginStudentAccount = async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).send("Email and password are required.");
+  }
+
+  if (!SECRET_KEY) {
+    return res
+      .status(500)
+      .send("Server configuration error: 'SECRET KEY' not defined.");
+  }
+
+  try {
+    const sqlQuery = `
+      SELECT
+        user_id,
+        name,
+        email,
+        password,
+        profile_picture,
+        languages,
+        nationality,
+        phone_number,
+        is_active
+      FROM students
+      WHERE email = $1 AND is_active = TRUE;
+    `;
+
+    const result = await pool.query(sqlQuery, [email]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).send("Email not found");
+    }
+
+    const student = result.rows[0];
+    const isPasswordValid = bcrypt.compareSync(password, student.password);
+    if (!isPasswordValid) {
+      return res.status(401).send("Invalid password");
+    }
+
+    const { password: psw, ...account } = student;
+
+    // Generate token
+    const token = jwt.sign(account, SECRET_KEY, {
+      expiresIn: "1h",
+    });
+
+    const generateRandomNumber = () => {
+      return Math.floor(1000 + Math.random() * 9000);
+    };
+
+    res.cookie("auth_token_" + generateRandomNumber(), token, {
+      httpOnly: process.env.NODE_ENV === "production",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      expires: new Date(Date.now() + 3600 * 1000),
+    });
+
+    return res.json(account);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send("Error during login");
   }
 };
