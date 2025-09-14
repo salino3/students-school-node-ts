@@ -4,4 +4,6 @@ const routerStudents = Router();
 
 routerStudents.get("/", studentControllers.getStudents);
 
+routerStudents.get("/batch", studentControllers.getBatchStudents);
+
 export default routerStudents;
