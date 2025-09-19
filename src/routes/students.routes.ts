@@ -6,4 +6,6 @@ routerStudents.get("/", studentControllers.getStudents);
 
 routerStudents.get("/batch", studentControllers.getBatchStudents);
 
+routerStudents.get("/:id", studentControllers.getStudentsById);
+
 export default routerStudents;
