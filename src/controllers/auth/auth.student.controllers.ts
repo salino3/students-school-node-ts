@@ -126,7 +126,7 @@ export const loginStudentAccount = async (req: Request, res: Response) => {
   try {
     const sqlQuery = `
       SELECT
-        user_id,
+        student_id,
         name,
         email,
         password,
