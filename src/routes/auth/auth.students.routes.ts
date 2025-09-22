@@ -12,4 +12,9 @@ routerAuthStudents.post(
 
 routerAuthStudents.post("/login", studentsAuthControllers.loginStudentAccount);
 
+routerAuthStudents.patch(
+  "/:student_id",
+  studentsAuthControllers.changePasswordStudent
+);
+
 export default routerAuthStudents;
