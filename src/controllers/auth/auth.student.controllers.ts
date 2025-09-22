@@ -6,7 +6,7 @@ import { errorImage } from "../../utils/functions";
 import { SECRET_KEY } from "../../utils/config";
 
 // This is the controller to handle new student registrations.
-export const registerStudentAccount = async (req: Request, res: Response) => {
+const registerStudentAccount = async (req: Request, res: Response) => {
   // Extract data from the request body and the uploaded file
   const {
     name,
@@ -110,7 +110,7 @@ export const registerStudentAccount = async (req: Request, res: Response) => {
 };
 
 //
-export const loginStudentAccount = async (req: Request, res: Response) => {
+const loginStudentAccount = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -180,3 +180,60 @@ export const loginStudentAccount = async (req: Request, res: Response) => {
     return res.status(500).send("Error during login");
   }
 };
+
+//
+const changePasswordStudent = async (req: Request, res: Response) => {
+  const studentId = req.params.student_id;
+  const { password, newPassword } = req.body;
+
+  try {
+    if (!newPassword || !password) {
+      return res
+        .status(400)
+        .send({ message: "Both old password and new passwords are required." });
+    }
+
+    if (password === newPassword) {
+      return res.status(400).send({
+        message: "New password should be different than old password.",
+      });
+    }
+
+    // Get the student to compare the current password
+    const studentResult = await pool.query(
+      "SELECT password FROM students WHERE student_id = $1 AND is_active = TRUE",
+      [studentId]
+    );
+
+    if (studentResult.rows.length === 0) {
+      return res.status(404).send("Student not found or is inactive.");
+    }
+
+    const student = studentResult.rows[0];
+
+    // Compare the old password with the hashed password from the database
+    const isMatch = await bcrypt.compare(password, student.password);
+    if (!isMatch) {
+      return res.status(400).send("Incorrect old password.");
+    }
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update the password in the database
+    const sqlQuery = `
+      UPDATE students
+      SET password = $1
+      WHERE student_id = $2
+      RETURNING student_id;
+    `;
+    await pool.query(sqlQuery, [hashedPassword, studentId]);
+
+    return res.status(200).send({ message: "Password updated successfully." });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send("Internal Server Error");
+  }
+};
+
+export { registerStudentAccount, loginStudentAccount, changePasswordStudent };
