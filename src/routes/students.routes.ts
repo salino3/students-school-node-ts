@@ -18,4 +18,6 @@ routerStudents.put(
   studentControllers?.updateStudent
 );
 
+routerStudents.patch("/:student_id", studentControllers.changePasswordStudent);
+
 export default routerStudents;
