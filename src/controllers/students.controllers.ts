@@ -313,6 +313,30 @@ const removeStudentFromWeb = async (req: Request, res: Response) => {
   }
 };
 
+//
+const deleteStudent = async (req: Request, res: Response) => {
+  const studentId = req.params.student_id;
+
+  try {
+    const result = await pool.query(
+      `DELETE FROM students
+      WHERE student_id = $1;`,
+      [studentId]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).send({ message: "Student not found" });
+    }
+
+    return res.status(200).json({
+      message: "Student account successfully deleted",
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send("Internal Server Error");
+  }
+};
+
 export {
   getStudents,
   getBatchStudents,
@@ -320,4 +344,5 @@ export {
   getStudentByEmail,
   updateStudent,
   removeStudentFromWeb,
+  deleteStudent,
 };
