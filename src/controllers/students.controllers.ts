@@ -281,10 +281,43 @@ const updateStudent = async (req: Request, res: Response) => {
   }
 };
 
+//
+const removeStudentFromWeb = async (req: Request, res: Response) => {
+  const { student_id } = req.params;
+
+  try {
+    const result = await pool.query(
+      `
+      UPDATE students
+      SET is_active = FALSE, deactivated_at = NOW()
+      WHERE student_id = $1 AND is_active = TRUE
+      RETURNING student_id, is_active, deactivated_at;
+      `,
+      [student_id]
+    );
+
+    // If no rows were affected, the student was not found or was already inactive
+    if (result.rowCount === 0) {
+      return res
+        .status(404)
+        .send({ message: "Student not found or is already inactive." });
+    }
+
+    return res.status(200).json({
+      message: "Student account successfully deactivated.",
+      deactivatedStudent: result.rows[0],
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send("Internal Server Error");
+  }
+};
+
 export {
   getStudents,
   getBatchStudents,
   getStudentsById,
   getStudentByEmail,
   updateStudent,
+  removeStudentFromWeb,
 };
