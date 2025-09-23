@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { pool } from "../db";
 
 //
-const addLanguages = async (req: Request, res: Response) => {
+const addLanguage = async (req: Request, res: Response) => {
   const { name } = req.body;
 
   try {
@@ -10,7 +10,7 @@ const addLanguages = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Name language is required" });
     }
 
-    const sqlQUery = `INSERT INTO programming_languages (name) VALUES ($1)`;
+    const sqlQUery = `INSERT INTO programming_languages (name) VALUES ($1);`;
 
     const result = await pool.query(sqlQUery, [name]);
 
@@ -26,7 +26,7 @@ const addLanguages = async (req: Request, res: Response) => {
 //
 const getListLanguages = async (req: Request, res: Response) => {
   try {
-    const result = await pool.query(`SELECT * FROM programming_languages`, []);
+    const result = await pool.query(`SELECT * FROM programming_languages;`, []);
 
     if (result.rows.length > 0) {
       return res.status(200).json(result.rows);
@@ -39,4 +39,54 @@ const getListLanguages = async (req: Request, res: Response) => {
   }
 };
 
-export { addLanguages, getListLanguages };
+//
+const getLanguageById = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    if (!id) {
+      return res.status(400).send({ message: "ID is required" });
+    }
+
+    const sqlQuery = `SELECT * FROM programming_languages WHERE language_id = $1;`;
+
+    const result = await pool.query(sqlQuery, [id]);
+
+    if (result.rows.length > 0) {
+      console.log(result.rowCount);
+      return res.status(200).json(result.rows[0]);
+    } else {
+      return res.status(404);
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send("Internal Server Error");
+  }
+};
+
+//
+const deleteLanguage = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    if (!id) {
+      return res.status(400).send({ message: "ID is required" });
+    }
+
+    const sqlQuery = `DELETE FROM programming_languages WHERE language_id = $1;`;
+
+    const result = await pool.query(sqlQuery, [id]);
+
+    if (result.rowCount && result.rowCount > 0) {
+      console.log(result.rowCount);
+      return res.status(200).send("Language deleted successfully");
+    } else {
+      return res.status(404).send("Programming language not found");
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send("Internal Server Error");
+  }
+};
+
+export { addLanguage, getListLanguages, getLanguageById, deleteLanguage };
