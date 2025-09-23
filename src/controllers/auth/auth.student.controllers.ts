@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { pool } from "../../db";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { errorImage } from "../../utils/functions";
 import { SECRET_KEY } from "../../utils/config";
 
@@ -236,4 +236,62 @@ const changePasswordStudent = async (req: Request, res: Response) => {
   }
 };
 
-export { registerStudentAccount, loginStudentAccount, changePasswordStudent };
+//
+const refreshStudentSession = async (req: Request, res: Response) => {
+  // Get the refresh token from the cookies
+  const refreshToken = req.cookies.refreshToken;
+
+  if (!refreshToken) {
+    return res.status(401).json({ message: "Invalid credentials" });
+  }
+
+  // Ensure the secret key is defined
+  if (!SECRET_KEY) {
+    return res
+      .status(500)
+      .send("Server configuration error: 'SECRET KEY' not defined.");
+  }
+
+  try {
+    // 1. Verify the refresh token to get the user's ID
+    const decoded = jwt.verify(refreshToken, SECRET_KEY) as JwtPayload;
+    const { student_id } = decoded;
+
+    // 2. Validate the user ID from the URL against the token's user ID
+    if (req.params.student_id !== String(student_id)) {
+      return res
+        .status(403)
+        .json({ message: "Forbidden: Token does not match user ID." });
+    }
+
+    const { exp, iat, ...cleanPayload } = decoded;
+
+    // 4. Generate a new access token with fresh data
+    const newAccessToken = jwt.sign(cleanPayload, SECRET_KEY, {
+      expiresIn: "1h", // The new access token expires in 1 hour
+    });
+
+    const generateRandomNumber = () => {
+      return Math.floor(1000 + Math.random() * 9000);
+    };
+
+    res.cookie("auth_token_" + generateRandomNumber(), newAccessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      expires: new Date(Date.now() + 3600 * 1000),
+    });
+
+    return res.status(200).json({ message: "Session refreshed successfully." });
+  } catch (err) {
+    console.error(err);
+    return res.status(401).json({ message: "Invalid credentials." });
+  }
+};
+
+export {
+  registerStudentAccount,
+  loginStudentAccount,
+  changePasswordStudent,
+  refreshStudentSession,
+};

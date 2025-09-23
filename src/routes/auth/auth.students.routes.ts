@@ -1,6 +1,10 @@
 import { Router } from "express";
 import * as studentsAuthControllers from "../../controllers/auth/auth.student.controllers";
 import { customUpload } from "../../middlewares/multer-config";
+import {
+  extractTokenFromCookie,
+  verifyJWT,
+} from "../../middlewares/verify-token";
 
 const routerAuthStudents = Router();
 
@@ -15,6 +19,13 @@ routerAuthStudents.post("/login", studentsAuthControllers.loginStudentAccount);
 routerAuthStudents.patch(
   "/:student_id",
   studentsAuthControllers.changePasswordStudent
+);
+
+routerAuthStudents.post(
+  "/refresh_token/:student_id",
+  verifyJWT("student_id"),
+  extractTokenFromCookie,
+  studentsAuthControllers.refreshStudentSession
 );
 
 export default routerAuthStudents;
