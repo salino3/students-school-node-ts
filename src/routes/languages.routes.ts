@@ -9,6 +9,8 @@ routerLanguages.get("/", languagesControllers.getListLanguages);
 
 routerLanguages.get("/:id", languagesControllers.getLanguageById);
 
+routerLanguages.patch("/:id", languagesControllers.updateNameLanguage);
+
 routerLanguages.delete("/:id", languagesControllers.deleteLanguage);
 
 export default routerLanguages;

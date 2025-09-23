@@ -65,6 +65,35 @@ const getLanguageById = async (req: Request, res: Response) => {
 };
 
 //
+const updateNameLanguage = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { name } = req.body;
+
+  try {
+    if (!name) {
+      return res.status(400).send("Name is required");
+    }
+
+    const sqlQuery = `
+      UPDATE programming_languages
+      SET name = $1
+      WHERE language_id = $2;
+      `;
+
+    const result = await pool.query(sqlQuery, [name, id]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).send("Programming language not found");
+    }
+
+    return res.status(200).send("Programming language successfully updated.");
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send("Internal Server Error");
+  }
+};
+
+//
 const deleteLanguage = async (req: Request, res: Response) => {
   const { id } = req.params;
 
@@ -89,4 +118,10 @@ const deleteLanguage = async (req: Request, res: Response) => {
   }
 };
 
-export { addLanguage, getListLanguages, getLanguageById, deleteLanguage };
+export {
+  addLanguage,
+  getListLanguages,
+  getLanguageById,
+  updateNameLanguage,
+  deleteLanguage,
+};
