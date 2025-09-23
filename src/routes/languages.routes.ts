@@ -5,4 +5,6 @@ const routerLanguages = Router();
 
 routerLanguages.post("/", languagesControllers.addLanguages);
 
+routerLanguages.get("/", languagesControllers.getListLanguages);
+
 export default routerLanguages;
