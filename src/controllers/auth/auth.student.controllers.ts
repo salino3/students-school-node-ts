@@ -253,11 +253,11 @@ const refreshStudentSession = async (req: Request, res: Response) => {
   }
 
   try {
-    // 1. Verify the refresh token to get the user's ID
+    //  Verify the refresh token to get the student's ID
     const decoded = jwt.verify(refreshToken, SECRET_KEY) as JwtPayload;
     const { student_id } = decoded;
 
-    // 2. Validate the user ID from the URL against the token's user ID
+    //  Validate the student ID from the URL against the token's student ID
     if (req.params.student_id !== String(student_id)) {
       return res
         .status(403)
@@ -266,9 +266,9 @@ const refreshStudentSession = async (req: Request, res: Response) => {
 
     const { exp, iat, ...cleanPayload } = decoded;
 
-    // 4. Generate a new access token with fresh data
+    // Generate a new access token with fresh data
     const newAccessToken = jwt.sign(cleanPayload, SECRET_KEY, {
-      expiresIn: "1h", // The new access token expires in 1 hour
+      expiresIn: "1h",
     });
 
     const generateRandomNumber = () => {
