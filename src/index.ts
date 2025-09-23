@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import path from "path";
 import routerAuthStudents from "./routes/auth/auth.students.routes";
 import routerStudents from "./routes/students.routes";
+import routerLanguages from "./routes/languages.routes";
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 // Students
 app.use("/api/auth/students", routerAuthStudents);
 app.use("/api/students", routerStudents);
+app.use("/api/languages", routerLanguages);
 
 // Log the current environment
 if (process.env.NODE_ENV === "production") {
