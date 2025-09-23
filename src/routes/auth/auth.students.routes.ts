@@ -23,7 +23,7 @@ routerAuthStudents.patch(
 
 routerAuthStudents.post(
   "/refresh_token/:student_id",
-  verifyJWT("student_id"),
+  // verifyJWT("student_id"),
   extractTokenFromCookie,
   studentsAuthControllers.refreshStudentSession
 );
