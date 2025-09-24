@@ -6,6 +6,7 @@ import path from "path";
 import routerAuthStudents from "./routes/auth/auth.students.routes";
 import routerStudents from "./routes/students.routes";
 import routerLanguages from "./routes/languages.routes";
+import routerCourses from "./routes/courses.routes";
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use("/api/auth/students", routerAuthStudents);
 app.use("/api/students", routerStudents);
 app.use("/api/languages", routerLanguages);
+app.use("/api/courses", routerCourses);
 
 // Log the current environment
 if (process.env.NODE_ENV === "production") {
