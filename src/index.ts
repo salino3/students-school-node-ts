@@ -38,7 +38,7 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use("/api/auth/students", routerAuthStudents);
 app.use("/api/students", routerStudents);
 app.use("/api/languages", routerLanguages);
-app.use("api/courses", routerCourses);
+app.use("/api/courses", routerCourses);
 
 // Log the current environment
 if (process.env.NODE_ENV === "production") {
