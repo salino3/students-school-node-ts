@@ -18,6 +18,8 @@ routerStudents.put(
   studentControllers?.updateStudent
 );
 
+routerStudents.patch("/languages", studentControllers?.updateStudentLanguages);
+
 routerStudents.patch("/:student_id", studentControllers?.removeStudentFromWeb);
 
 routerStudents.delete("/:student_id", studentControllers?.deleteStudent);

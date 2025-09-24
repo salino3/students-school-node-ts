@@ -282,6 +282,57 @@ const updateStudent = async (req: Request, res: Response) => {
 };
 
 //
+const updateStudentLanguages = async (req: Request, res: Response) => {
+  const { student_id, newLanguages } = req.body;
+
+  try {
+    //  Validate the input
+    if (typeof student_id !== "number" || !Array.isArray(newLanguages)) {
+      return res
+        .status(400)
+        .send(
+          "Invalid input: student_id must be a number and new_languages must be an array."
+        );
+    }
+
+    // Validate that all language IDs are numbers and not zero
+    for (const langId of newLanguages) {
+      if (
+        typeof langId !== "number" ||
+        langId === 0 ||
+        !Number.isInteger(langId)
+      ) {
+        return res
+          .status(400)
+          .send("All language IDs must be integer numbers and non-zero.");
+      }
+    }
+
+    // Use a Set to ensure all language IDs are unique
+    const uniqueLanguages = [...new Set(newLanguages)];
+
+    // Perform a single database query to update the entire languages array
+    const sqlQuery = `
+      UPDATE students
+      SET languages = $1
+      WHERE student_id = $2
+      ;
+    `;
+
+    const result = await pool.query(sqlQuery, [uniqueLanguages, student_id]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).send("Student not found.");
+    }
+
+    return res.status(200).send("Student languages updated successfully.");
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send("Internal Server Error");
+  }
+};
+
+//
 const removeStudentFromWeb = async (req: Request, res: Response) => {
   const { student_id } = req.params;
 
@@ -343,6 +394,7 @@ export {
   getStudentsById,
   getStudentByEmail,
   updateStudent,
+  updateStudentLanguages,
   removeStudentFromWeb,
   deleteStudent,
 };
