@@ -313,19 +313,40 @@ const updateStudentLanguages = async (req: Request, res: Response) => {
 
     // Perform a single database query to update the entire languages array
     const sqlQuery = `
-      UPDATE students
-      SET languages = $1
-      WHERE student_id = $2
-         AND (SELECT COUNT(*) FROM programming_languages WHERE language_id = ANY($1::int[])) = (SELECT array_length($1::int[], 1))
-      ;
+      WITH valid_langs AS (
+        SELECT COUNT(*) AS count
+        FROM programming_languages
+        WHERE language_id = ANY($1::int[])
+      ),
+      updated AS (
+        UPDATE students s
+        SET languages = $1
+        WHERE s.student_id = $2
+        RETURNING s.student_id
+      )
+      SELECT 
+        (SELECT count FROM valid_langs) AS valid_count,
+           COALESCE((SELECT array_length($1::int[], 1)), 0) AS expected_count,
+        (SELECT student_id FROM updated) AS id_student;
     `;
 
     const result = await pool.query(sqlQuery, [uniqueLanguages, student_id]);
 
-    if (result.rowCount === 0) {
+    const row = result.rows[0];
+
+    // Case 1: student not found
+    if (!row.id_student) {
       return res
         .status(404)
-        .send("Student not found or invalid language ID provided.");
+        .send(`Student with ID ${student_id} does not exist.`);
+    }
+
+    // Case 2: invalid language IDs
+    if (
+      row.valid_count == null ||
+      parseInt(row.valid_count, 10) !== row.expected_count
+    ) {
+      return res.status(400).send("One or more language IDs are invalid.");
     }
 
     return res.status(200).send("Student languages updated successfully.");
