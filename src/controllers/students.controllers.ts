@@ -316,13 +316,16 @@ const updateStudentLanguages = async (req: Request, res: Response) => {
       UPDATE students
       SET languages = $1
       WHERE student_id = $2
+         AND (SELECT COUNT(*) FROM programming_languages WHERE language_id = ANY($1::int[])) = (SELECT array_length($1::int[], 1))
       ;
     `;
 
     const result = await pool.query(sqlQuery, [uniqueLanguages, student_id]);
 
     if (result.rowCount === 0) {
-      return res.status(404).send("Student not found.");
+      return res
+        .status(404)
+        .send("Student not found or invalid language ID provided.");
     }
 
     return res.status(200).send("Student languages updated successfully.");
