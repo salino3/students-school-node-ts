@@ -118,6 +118,14 @@ export const authenticateToken = (
 
     try {
       const decoded = jwt.verify(token, SECRET_KEY as string);
+      if (cookieName) {
+        req.cookies.refreshToken = req.cookies[cookieName];
+      } else {
+        console.warn(
+          "Warning: No cookie starting with 'auth_token_' was found."
+        );
+      }
+
       if (decodedKey) {
         (req as any).authId = (decoded as any)[decodedKey];
       }
