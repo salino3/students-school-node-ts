@@ -2,7 +2,7 @@ import { Router } from "express";
 import * as studentsAuthControllers from "../../controllers/auth/auth.student.controllers";
 import { customUpload } from "../../middlewares/multer-config";
 import {
-  extractTokenFromCookie,
+  extractCodeTokenFromCookie,
   verifyJWT,
 } from "../../middlewares/verify-token";
 
@@ -24,7 +24,7 @@ routerAuthStudents.patch(
 routerAuthStudents.post(
   "/refresh_token/:student_id",
   // verifyJWT("student_id"),
-  extractTokenFromCookie,
+  extractCodeTokenFromCookie,
   studentsAuthControllers.refreshStudentSession
 );
 
