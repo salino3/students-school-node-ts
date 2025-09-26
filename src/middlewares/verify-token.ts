@@ -7,8 +7,9 @@ interface CustomJwtPayload extends JwtPayload {
   [key: string]: any;
 }
 
-interface CustomRequest extends Request {
+export interface CustomRequest extends Request {
   [key: string]: any;
+  authId?: number;
 }
 
 export const verifyJWT = (key: string = "", bodyParam: string = "") => {
@@ -98,7 +99,7 @@ export const authenticateToken = (
   paramKey: string = "",
   decodedKey: string = ""
 ) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: CustomRequest, res: Response, next: NextFunction) => {
     // 1. Determinar el nombre de la cookie y extraer el token
     const endToken = req.headers["end_token"];
     if (!endToken) {
@@ -127,7 +128,7 @@ export const authenticateToken = (
       }
 
       if (decodedKey) {
-        (req as any).authId = (decoded as any)[decodedKey];
+        req.authId = (decoded as any)[decodedKey];
       }
 
       if (paramKey) {
