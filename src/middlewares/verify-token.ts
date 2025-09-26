@@ -131,9 +131,11 @@ export const authenticateToken = (
       }
 
       if (paramKey) {
-        const userIdFromToken = (decoded as any)[decodedKey];
+        const userIdFromToken = (decoded as any)[
+          decodedKey ? decodedKey : paramKey
+        ];
         const paramId = req.params[paramKey];
-        if (String(paramId) !== String(userIdFromToken)) {
+        if (paramId !== String(userIdFromToken)) {
           console.warn(
             `Authorization failure: User ${userIdFromToken} attempted to access resource for ID ${paramId}`
           );
