@@ -52,4 +52,44 @@ const addCourseToStudent = async (req: CustomRequest, res: Response) => {
   }
 };
 
-export { addCourseToStudent };
+const getCoursesStudent = async (req: CustomRequest, res: Response) => {
+  const student_id = req.authId;
+
+  if (!student_id) {
+    return res
+      .status(401)
+      .json({ message: "Authentication required to view courses." });
+  }
+
+  try {
+    const sqlQuery = `
+            SELECT 
+                courses.course_id,
+                courses.title,
+                courses.description,
+                courses.difficulty,
+                courses.price,
+                courses.language_id,
+                programming_languages.name AS language_name,
+                sc.enrollment_date
+            FROM student_courses sc
+            INNER JOIN courses ON sc.course_id = courses.course_id
+            INNER JOIN programming_languages   ON courses.language_id = programming_languages.language_id
+            WHERE sc.student_id = $1
+            ORDER BY sc.enrollment_date DESC;
+        `;
+
+    const result = await pool.query(sqlQuery, [student_id]);
+
+    return res.status(200).json({
+      courses: result.rows,
+    });
+  } catch (error) {
+    console.error("Error retrieving student courses:", error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error while retrieving courses." });
+  }
+};
+
+export { addCourseToStudent, getCoursesStudent };
