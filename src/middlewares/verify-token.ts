@@ -97,6 +97,7 @@ export const extractCodeTokenFromCookie = (
 //
 export const authenticateToken = (
   paramKey: string = "",
+  // If key from decoded must be checked and different form 'paramKey'
   decodedKey: string = ""
 ) => {
   return (req: CustomRequest, res: Response, next: NextFunction) => {
@@ -128,11 +129,11 @@ export const authenticateToken = (
       }
 
       if (decodedKey) {
-        req.authId = (decoded as any)[decodedKey];
+        req.authId = (decoded as CustomJwtPayload)[decodedKey];
       }
 
       if (paramKey) {
-        const userIdFromToken = (decoded as any)[
+        const userIdFromToken = (decoded as CustomJwtPayload)[
           decodedKey ? decodedKey : paramKey
         ];
         const paramId = req.params[paramKey];

@@ -16,4 +16,10 @@ routerStudentsCourses.get(
   studentCoursesControllers.getCoursesStudent
 );
 
+routerStudentsCourses.delete(
+  "/:student_id/:course_id",
+  authenticateToken("student_id", "student_id"),
+  studentCoursesControllers.deleteCourseStudent
+);
+
 export default routerStudentsCourses;
