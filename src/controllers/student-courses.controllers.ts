@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { pool } from "../db";
 import { CustomRequest } from "../middlewares/verify-token";
 
+//
 const addCourseToStudent = async (req: CustomRequest, res: Response) => {
   const student_id = req.authId;
   const { courseId } = req.body;
@@ -52,4 +53,92 @@ const addCourseToStudent = async (req: CustomRequest, res: Response) => {
   }
 };
 
-export { addCourseToStudent };
+//
+const getCoursesStudent = async (req: CustomRequest, res: Response) => {
+  const student_id = req.authId;
+
+  if (!student_id) {
+    return res
+      .status(401)
+      .json({ message: "Authentication required to view courses." });
+  }
+
+  try {
+    const sqlQuery = `
+            SELECT 
+                courses.course_id,
+                courses.title,
+                courses.description,
+                courses.difficulty,
+                courses.price,
+                courses.language_id,
+                programming_languages.name AS language_name,
+                sc.enrollment_date
+            FROM student_courses sc
+            INNER JOIN courses ON sc.course_id = courses.course_id
+            INNER JOIN programming_languages   ON courses.language_id = programming_languages.language_id
+            WHERE sc.student_id = $1
+            ORDER BY sc.enrollment_date DESC;
+        `;
+
+    const result = await pool.query(sqlQuery, [student_id]);
+
+    return res.status(200).json({
+      courses: result.rows,
+    });
+  } catch (error) {
+    console.error("Error retrieving student courses:", error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error while retrieving courses." });
+  }
+};
+
+//
+const deleteCourseStudent = async (req: CustomRequest, res: Response) => {
+  const student_id = req.authId;
+
+  const { course_id } = req.params;
+
+  if (!student_id) {
+    return res
+      .status(401)
+      .json({ message: "Authentication required to remove courses." });
+  }
+
+  if (!course_id || isNaN(Number(course_id)) || Number(course_id) <= 0) {
+    return res.status(400).json({
+      message: "A valid course ID is required in the URL parameters.",
+    });
+  }
+
+  try {
+    const sqlQuery = `
+            DELETE FROM student_courses
+            WHERE student_id = $1 AND course_id = $2;
+        `;
+
+    const courseIdNum = Number(course_id);
+
+    const result = await pool.query(sqlQuery, [student_id, courseIdNum]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({
+        message:
+          "Enrollment not found. The student is not enrolled in this course.",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Course successfully removed from student enrollment.",
+      course_id: course_id,
+    });
+  } catch (error) {
+    console.error("Error removing course enrollment:", error);
+    return res.status(500).json({
+      message: "Internal server error while processing disenrollment.",
+    });
+  }
+};
+
+export { addCourseToStudent, getCoursesStudent, deleteCourseStudent };
