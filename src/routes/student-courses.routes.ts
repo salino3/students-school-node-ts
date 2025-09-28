@@ -6,20 +6,26 @@ const routerStudentsCourses = Router();
 
 routerStudentsCourses.post(
   "/:student_id",
-  authenticateToken("student_id", "student_id"),
+  authenticateToken(["student_id"], "student_id"),
   studentCoursesControllers.addCourseToStudent
 );
 
 routerStudentsCourses.get(
   "/:student_id",
-  authenticateToken("student_id", "student_id"),
+  authenticateToken(["student_id"], "student_id"),
   studentCoursesControllers.getCoursesStudent
 );
 
 routerStudentsCourses.delete(
   "/:student_id/:course_id",
-  authenticateToken("student_id", "student_id"),
+  authenticateToken(["student_id"], "student_id"),
   studentCoursesControllers.deleteCourseStudent
+);
+
+routerStudentsCourses.delete(
+  "remove-all-courses/:student_id",
+  authenticateToken(["student_id"], "student_id"),
+  studentCoursesControllers.deleteAllCoursesStudent
 );
 
 export default routerStudentsCourses;
