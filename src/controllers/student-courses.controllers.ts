@@ -95,6 +95,41 @@ const getCoursesStudent = async (req: CustomRequest, res: Response) => {
 };
 
 //
+const deleteAllCoursesStudent = async (req: CustomRequest, res: Response) => {
+  const student_id = req.authId;
+
+  if (!student_id) {
+    return res
+      .status(401)
+      .json({ message: "Authentication required to clear enrollments." });
+  }
+
+  try {
+    const sqlQuery = `
+      DELETE FROM student_courses
+      WHERE student_id = $1;
+    `;
+
+    const result = await pool.query(sqlQuery, [student_id]);
+
+    const message =
+      (result.rowCount ?? 0) === 0
+        ? "No active enrollments found to remove."
+        : `Successfully removed ${result.rowCount} course enrollments.`;
+
+    return res.status(200).json({
+      message: message,
+      courses_removed_count: result.rowCount,
+    });
+  } catch (error) {
+    console.error("Error deleting all student course enrollments:", error);
+    return res.status(500).json({
+      message: "Internal server error while clearing enrollments.",
+    });
+  }
+};
+
+//
 const deleteCourseStudent = async (req: CustomRequest, res: Response) => {
   const student_id = req.authId;
 
@@ -155,44 +190,9 @@ const deleteCourseStudent = async (req: CustomRequest, res: Response) => {
   }
 };
 
-//
-const deleteAllCoursesStudent = async (req: CustomRequest, res: Response) => {
-  const student_id = req.authId;
-
-  if (!student_id) {
-    return res
-      .status(401)
-      .json({ message: "Authentication required to clear enrollments." });
-  }
-
-  try {
-    const sqlQuery = `
-      DELETE FROM student_courses
-      WHERE student_id = $1;
-    `;
-
-    const result = await pool.query(sqlQuery, [student_id]);
-
-    const message =
-      (result.rowCount ?? 0) === 0
-        ? "No active enrollments found to remove."
-        : `Successfully removed ${result.rowCount} course enrollments.`;
-
-    return res.status(200).json({
-      message: message,
-      courses_removed_count: result.rowCount,
-    });
-  } catch (error) {
-    console.error("Error deleting all student course enrollments:", error);
-    return res.status(500).json({
-      message: "Internal server error while clearing enrollments.",
-    });
-  }
-};
-
 export {
   addCourseToStudent,
   getCoursesStudent,
-  deleteCourseStudent,
   deleteAllCoursesStudent,
+  deleteCourseStudent,
 };

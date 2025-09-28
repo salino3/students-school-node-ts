@@ -129,8 +129,10 @@ export const authenticateToken = (
       if (decodedKey) {
         req.authId = (decoded as CustomJwtPayload)[decodedKey];
       }
-
+      console.log("clog5", req.params);
       for (const key of paramKeys) {
+        // if (!(key in req.params)) continue;
+
         const userIdFromToken = (decoded as CustomJwtPayload)[
           decodedKey ? decodedKey : key
         ];

@@ -17,15 +17,15 @@ routerStudentsCourses.get(
 );
 
 routerStudentsCourses.delete(
-  "/:student_id/:course_id",
+  "/remove-all-courses/:student_id",
   authenticateToken(["student_id"], "student_id"),
-  studentCoursesControllers.deleteCourseStudent
+  studentCoursesControllers.deleteAllCoursesStudent
 );
 
 routerStudentsCourses.delete(
-  "remove-all-courses/:student_id",
+  "/:student_id/:course_id",
   authenticateToken(["student_id"], "student_id"),
-  studentCoursesControllers.deleteAllCoursesStudent
+  studentCoursesControllers.deleteCourseStudent
 );
 
 export default routerStudentsCourses;
