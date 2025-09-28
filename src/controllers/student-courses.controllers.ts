@@ -114,25 +114,39 @@ const deleteCourseStudent = async (req: CustomRequest, res: Response) => {
 
   try {
     const sqlQuery = `
-            DELETE FROM student_courses
-            WHERE student_id = $1 AND course_id = $2;
-        `;
+      WITH deleted AS (
+        DELETE FROM student_courses
+        WHERE student_id = $1 AND course_id = $2
+        RETURNING course_id
+      )
+      SELECT 
+        CASE
+          WHEN EXISTS (SELECT 1 FROM deleted) THEN 'deleted'
+          WHEN EXISTS (SELECT 1 FROM courses WHERE course_id = $2) THEN 'not_enrolled'
+          ELSE 'no_course'
+        END AS status,
+        $2::int AS course_id;
+    `;
 
-    const courseIdNum = Number(course_id);
+    const result = await pool.query(sqlQuery, [student_id, Number(course_id)]);
+    const { status, course_id: returnedCourseId } = result.rows[0];
 
-    const result = await pool.query(sqlQuery, [student_id, courseIdNum]);
-
-    if (result.rowCount === 0) {
+    if (status === "deleted") {
+      return res.status(200).json({
+        message: "Course successfully removed from student enrollment.",
+        course_id: returnedCourseId,
+      });
+    } else if (status === "not_enrolled") {
       return res.status(404).json({
         message:
           "Enrollment not found. The student is not enrolled in this course.",
+        course_id: returnedCourseId,
+      });
+    } else if (status === "no_course") {
+      return res.status(404).json({
+        message: `The course with ID ${course_id} does not exist.`,
       });
     }
-
-    return res.status(200).json({
-      message: "Course successfully removed from student enrollment.",
-      course_id: course_id,
-    });
   } catch (error) {
     console.error("Error removing course enrollment:", error);
     return res.status(500).json({
