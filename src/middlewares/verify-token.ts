@@ -96,13 +96,12 @@ export const extractCodeTokenFromCookie = (
 
 //
 export const authenticateToken = (
-  paramKey: string = "",
-  // If key from decoded must be checked and different form 'paramKey'
+  paramKeys: string[] = [], // Accepts severals keys
   decodedKey: string = ""
 ) => {
   return (req: CustomRequest, res: Response, next: NextFunction) => {
-    // 1. Determinar el nombre de la cookie y extraer el token
     const endToken = req.headers["end_token"];
+
     if (!endToken) {
       return res.status(400).send({
         message: "Authentication failed: Cookie identifier is missing.",
@@ -120,26 +119,28 @@ export const authenticateToken = (
 
     try {
       const decoded = jwt.verify(token, SECRET_KEY as string);
+
       if (cookieName) {
         req.cookies.refreshToken = req.cookies[cookieName];
       } else {
-        console.warn(
-          "Warning: No cookie starting with 'auth_token_' was found."
-        );
+        console.warn("Warning: Authentication cookie missing or invalid.");
       }
 
       if (decodedKey) {
         req.authId = (decoded as CustomJwtPayload)[decodedKey];
       }
+      console.log("clog5", req.params);
+      for (const key of paramKeys) {
+        // if (!(key in req.params)) continue;
 
-      if (paramKey) {
         const userIdFromToken = (decoded as CustomJwtPayload)[
-          decodedKey ? decodedKey : paramKey
+          decodedKey ? decodedKey : key
         ];
-        const paramId = req.params[paramKey];
-        if (paramId !== String(userIdFromToken)) {
+        const paramId = req.params[key];
+
+        if (paramId && paramId !== String(userIdFromToken)) {
           console.warn(
-            `Authorization failure: User ${userIdFromToken} attempted to access resource for ID ${paramId}`
+            `Authorization failure: User ${userIdFromToken} attempted to access resource for ${key} = ${paramId}`
           );
           return res.status(403).json({
             message:
